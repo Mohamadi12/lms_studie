@@ -3,6 +3,8 @@ import Menu from "./menu";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Logout } from "@/src/icons";
+import GlassSheet from "@/src/components/global/glass-sheet";
+import { MenuIcon } from "lucide-react";
 
 type Props = {};
 
@@ -21,6 +23,16 @@ const LandingPageNavbar = (props: Props) => {
             Login
           </Button>
         </Link>
+        <GlassSheet
+          triggerClass="lg:hidden"
+          trigger={
+            <Button variant="ghost" className="hover:bg-transparent">
+              <MenuIcon size={30} />
+            </Button>
+          }
+        >
+          <Menu orientation="mobile" />
+        </GlassSheet>
       </div>
     </div>
   );
