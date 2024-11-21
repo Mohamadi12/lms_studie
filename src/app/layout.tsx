@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
+    <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body className={`${jakarta.className} bg-black`}>
           <ThemeProvider
@@ -28,9 +28,9 @@ export default function RootLayout({
             defaultTheme="dark"
             disableTransitionOnChange
           >
-            <ReduxProvider>
+            
               <ReactQueryProvider>{children}</ReactQueryProvider>
-            </ReduxProvider>
+            
             <Toaster />
           </ThemeProvider>
         </body>
