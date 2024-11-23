@@ -1,9 +1,9 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { onAuthenticatedUser } from "@/src/actions/auth"
-import { onGetAffiliateInfo } from "@/src/actions/groups"
-import CreateGroup from "@/src/components/forms/create-group"
-import { User } from "lucide-react"
-import { redirect } from "next/navigation"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { onAuthenticatedUser } from "@/src/actions/auth";
+import { onGetAffiliateInfo } from "@/src/actions/groups";
+import CreateGroup from "@/src/components/forms/create-group";
+import { User } from "lucide-react";
+import { redirect } from "next/navigation";
 
 const GroupCreatePage = async ({
   searchParams,

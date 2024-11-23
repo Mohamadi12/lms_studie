@@ -3,8 +3,13 @@
 
 import { combineReducers, configureStore } from "@reduxjs/toolkit"
 import { TypedUseSelectorHook, useSelector } from "react-redux"
+import OnlineTrackingReducer from "./slices/online-member-slice"
+import searchReducer from "./slices/search-slice"
 
-const rootReducer = combineReducers({})
+const rootReducer = combineReducers({
+  OnlineTrackingReducer,
+  searchReducer,
+})
 
 export const store = configureStore({
   reducer: rootReducer,
