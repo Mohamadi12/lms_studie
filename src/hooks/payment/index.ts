@@ -1,7 +1,7 @@
 "use client"
 
-import { onCreateNewGroup } from "@/src/actions/groups";
-import { onGetStripeClientSecret, onTransferCommission } from "@/src/actions/payments";
+import { onCreateNewGroup, onGetGroupChannels, onJoinGroup } from "@/src/actions/groups";
+import { onGetActiveSubscription, onGetGroupSubscriptionPaymentIntent, onGetStripeClientSecret, onTransferCommission } from "@/src/actions/payments";
 import { CreateGroupSchema } from "@/src/components/forms/create-group/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
@@ -112,3 +112,105 @@ export const usePayments = (
     creatingIntent,
   }
 }
+
+export const useActiveGroupSubscription = (groupId: string) => {
+  const { data } = useQuery({
+    queryKey: ["active-subscription"],
+    queryFn: () => onGetActiveSubscription(groupId),
+  })
+
+  return { data }
+}
+
+export const useJoinFree = (groupid: string) => {
+  const router = useRouter()
+  const onJoinFreeGroup = async () => {
+    const member = await onJoinGroup(groupid)
+    if (member?.status === 200) {
+      const channels = await onGetGroupChannels(groupid)
+      router.push(`/group/${groupid}/channel/${channels?.channels?.[0].id}`)
+    }
+  }
+
+  return { onJoinFreeGroup }
+}
+
+export const useJoinGroup = (groupid: string) => {
+  const stripe = useStripe()
+  const elements = useElements()
+
+  const router = useRouter()
+
+  const { data: Intent } = useQuery({
+    queryKey: ["group-payment-intent"],
+    queryFn: () => onGetGroupSubscriptionPaymentIntent(groupid),
+  })
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async () => {
+      if (!stripe || !elements || !Intent) {
+        return null
+      }
+      const { error, paymentIntent } = await stripe.confirmCardPayment(
+        Intent.secret!,
+        {
+          payment_method: {
+            card: elements.getElement(CardElement) as StripeCardElement,
+          },
+        },
+      )
+
+      if (error) {
+        console.log(error)
+        return toast("Error", {
+          description: "Oops! something went wrong, try again later",
+        })
+      }
+
+      if (paymentIntent?.status === "succeeded") {
+        const member = await onJoinGroup(groupid)
+        if (member?.status === 200) {
+          const channels = await onGetGroupChannels(groupid)
+          router.push(`/group/${groupid}/channel/${channels?.channels?.[0].id}`)
+        }
+      }
+    },
+  })
+
+  const onPayToJoin = () => mutate()
+
+  return { onPayToJoin, isPending }
+}
+
+// export const useGroupSubscription = (groupid: string) => {
+//   const {
+//     register,
+//     formState: { errors },
+//     reset,
+//     handleSubmit,
+//   } = useForm<z.infer<typeof CreateGroupSubscriptionSchema>>({
+//     resolver: zodResolver(CreateGroupSubscriptionSchema),
+//   })
+
+//   const client = useQueryClient()
+
+//   const { mutate, isPending, variables } = useMutation({
+//     mutationFn: (data: { price: string }) =>
+//       onCreateNewGroupSubscription(groupid, data.price),
+//     onMutate: () => reset(),
+//     onSuccess: (data) =>
+//       toast(data?.status === 200 ? "Success" : "Error", {
+//         description: data?.message,
+//       }),
+//     onSettled: async () => {
+//       return await client.invalidateQueries({
+//         queryKey: ["group-subscriptions"],
+//       })
+//     },
+//   })
+
+//   const onCreateNewSubscription = handleSubmit(async (values) =>
+//     mutate({ ...values }),
+//   )
+//   return { register, errors, onCreateNewSubscription, isPending, variables }
+// }
