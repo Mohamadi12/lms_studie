@@ -1,5 +1,6 @@
 "use server"
 import Stripe from "stripe"
+import { client } from "../lib/prisma"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
     typescript: true,
@@ -36,5 +37,22 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
       }
     } catch (error) {
       return { status: 400 }
+    }
+  }
+
+  export const onGetActiveSubscription = async (groupId: string) => {
+    try {
+      const subscription = await client.subscription.findFirst({
+        where: {
+          groupId: groupId,
+          active: true,
+        },
+      })
+  
+      if (subscription) {
+        return { status: 200, subscription }
+      }
+    } catch (error) {
+      return { status: 404 }
     }
   }
