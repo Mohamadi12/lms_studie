@@ -1,9 +1,14 @@
 "use client";
 
 import {
+  onAddCustomDomain,
+  onGetAllGroupMembers,
+  onGetAllUserMessages,
+  onGetDomainConfig,
   onGetExploreGroup,
   onGetGroupInfo,
   onSearchGroups,
+  onSendMessage,
   onUpdateGroupGallery,
   onUpDateGroupSettings,
 } from "@/src/actions/groups";
@@ -11,7 +16,7 @@ import { superbaseClient, validateURLString } from "@/src/lib/utils";
 import { onOnline } from "@/src/redux/slices/online-member-slice";
 import { GroupStateProps, onClearSearch, onSearch } from "@/src/redux/slices/search-slice";
 import { AppDispatch } from "@/src/redux/store";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { JSONContent } from "novel";
@@ -19,11 +24,14 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { GroupSettingsSchema } from "@/src/components/forms/group-settings/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { upload } from "@/src/lib/uploadcare";
 import { onClearList, onInfiniteScroll } from "@/src/redux/slices/infinite-scroll-slice";
 import { UpdateGallerySchema } from "@/src/components/forms/media-gallery/schema";
+import { onChat } from "@/src/redux/slices/chats-slices";
+import { SendNewMessageSchema } from "@/src/components/forms/huddles/schema";
+import { v4 } from "uuid";
 
 export const useGroupChatOnline = (userid: string) => {
   const dispatch: AppDispatch = useDispatch()
@@ -558,96 +566,96 @@ export const useMediaGallery = (groupid: string) => {
   }
 }
 
-// export const useGroupChat = (groupid: string) => {
-//   const { data } = useQuery({
-//     queryKey: ["member-chats"],
-//     queryFn: () => onGetAllGroupMembers(groupid),
-//   })
+export const useGroupChat = (groupid: string) => {
+  const { data } = useQuery({
+    queryKey: ["member-chats"],
+    queryFn: () => onGetAllGroupMembers(groupid),
+  })
 
-//   const pathname = usePathname()
+  const pathname = usePathname()
 
-//   return { data, pathname }
-// }
+  return { data, pathname }
+}
 
-// export const useChatWindow = (recieverid: string) => {
-//   const { data, isFetched } = useQuery({
-//     queryKey: ["user-messages"],
-//     queryFn: () => onGetAllUserMessages(recieverid),
-//   })
+export const useChatWindow = (recieverid: string) => {
+  const { data, isFetched } = useQuery({
+    queryKey: ["user-messages"],
+    queryFn: () => onGetAllUserMessages(recieverid),
+  })
 
-//   const messageWindowRef = useRef<HTMLDivElement | null>(null)
+  const messageWindowRef = useRef<HTMLDivElement | null>(null)
 
-//   const onScrollToBottom = () => {
-//     messageWindowRef.current?.scroll({
-//       top: messageWindowRef.current.scrollHeight,
-//       left: 0,
-//       behavior: "smooth",
-//     })
-//   }
+  const onScrollToBottom = () => {
+    messageWindowRef.current?.scroll({
+      top: messageWindowRef.current.scrollHeight,
+      left: 0,
+      behavior: "smooth",
+    })
+  }
 
-//   useEffect(() => {
-//     supabaseClient
-//       .channel("table-db-changes")
-//       .on(
-//         "postgres_changes",
-//         {
-//           event: "*",
-//           schema: "public",
-//           table: "Message",
-//         },
-//         async (payload) => {
-//           dispatch(
-//             onChat({
-//               chat: [
-//                 ...(payload.new as {
-//                   id: string
-//                   message: string
-//                   createdAt: Date
-//                   senderid: string | null
-//                   recieverId: string | null
-//                 }[]),
-//               ],
-//             }),
-//           )
-//         },
-//       )
-//       .subscribe()
-//   }, [])
+  useEffect(() => {
+    superbaseClient
+      .channel("table-db-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "Message",
+        },
+        async (payload) => {
+          dispatch(
+            onChat({
+              chat: [
+                ...(payload.new as {
+                  id: string
+                  message: string
+                  createdAt: Date
+                  senderid: string | null
+                  recieverId: string | null
+                }[]),
+              ],
+            }),
+          )
+        },
+      )
+      .subscribe()
+  }, [])
 
-//   useEffect(() => {
-//     onScrollToBottom()
-//   }, [messageWindowRef])
+  useEffect(() => {
+    onScrollToBottom()
+  }, [messageWindowRef])
 
-//   const dispatch: AppDispatch = useDispatch()
+  const dispatch: AppDispatch = useDispatch()
 
-//   if (isFetched && data?.messages) dispatch(onChat({ chat: data.messages }))
+  if (isFetched && data?.messages) dispatch(onChat({ chat: data.messages }))
 
-//   return { messageWindowRef }
-// }
+  return { messageWindowRef }
+}
 
-// export const useSendMessage = (recieverId: string) => {
-//   const { register, reset, handleSubmit } = useForm<
-//     z.infer<typeof SendNewMessageSchema>
-//   >({
-//     resolver: zodResolver(SendNewMessageSchema),
-//   })
+export const useSendMessage = (recieverId: string) => {
+  const { register, reset, handleSubmit } = useForm<
+    z.infer<typeof SendNewMessageSchema>
+  >({
+    resolver: zodResolver(SendNewMessageSchema),
+  })
 
-//   const { mutate } = useMutation({
-//     mutationKey: ["send-new-message"],
-//     mutationFn: (data: { messageid: string; message: string }) =>
-//       onSendMessage(recieverId, data.messageid, data.message),
-//     onMutate: () => reset(),
-//     onSuccess: () => {
-//       return
-//     },
-//   })
+  const { mutate } = useMutation({
+    mutationKey: ["send-new-message"],
+    mutationFn: (data: { messageid: string; message: string }) =>
+      onSendMessage(recieverId, data.messageid, data.message),
+    onMutate: () => reset(),
+    onSuccess: () => {
+      return
+    },
+  })
 
-//   const onSendNewMessage = handleSubmit(async (values) =>
-//     mutate({ messageid: v4(), message: values.message }),
-//   )
+  const onSendNewMessage = handleSubmit(async (values) =>
+    mutate({ messageid: v4(), message: values.message }),
+  )
 
-//   return { onSendNewMessage, register }
-// }
+  return { onSendNewMessage, register }
+}
 
 // export const useCustomDomain = (groupid: string) => {
 //   const {
