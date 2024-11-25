@@ -10,6 +10,7 @@ import {
   onUpdateSection,
 } from "@/src/actions/course";
 import { onGetGroupInfo } from "@/src/actions/groups";
+import { CourseContentSchema } from "@/src/components/forms/course-content/schema";
 import { CreateCourseSchema } from "@/src/components/global/create-course/schema";
 import { upload } from "@/src/lib/uploadcare";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -350,105 +351,105 @@ export const useCourseSectionInfo = (sectionId: string) => {
   return { data };
 };
 
-//   export const useCourseContent = (
-//     sectionId: string,
-//     description: string | null,
-//     jsonDescription: string | null,
-//     htmlDescription: string | null,
-//   ) => {
-//     const jsonContent =
-//       jsonDescription !== null ? JSON.parse(jsonDescription as string) : undefined
+  export const useCourseContent = (
+    sectionId: string,
+    description: string | null,
+    jsonDescription: string | null,
+    htmlDescription: string | null,
+  ) => {
+    const jsonContent =
+      jsonDescription !== null ? JSON.parse(jsonDescription as string) : undefined
 
-//     const [onJsonDescription, setJsonDescription] = useState<
-//       JSONContent | undefined
-//     >(jsonContent)
+    const [onJsonDescription, setJsonDescription] = useState<
+      JSONContent | undefined
+    >(jsonContent)
 
-//     const [onDescription, setOnDescription] = useState<string | undefined>(
-//       description || undefined,
-//     )
+    const [onDescription, setOnDescription] = useState<string | undefined>(
+      description || undefined,
+    )
 
-//     const [onHtmlDescription, setOnHtmlDescription] = useState<
-//       string | undefined
-//     >(htmlDescription || undefined)
+    const [onHtmlDescription, setOnHtmlDescription] = useState<
+      string | undefined
+    >(htmlDescription || undefined)
 
-//     const editor = useRef<HTMLFormElement | null>(null)
-//     const [onEditDescription, setOnEditDescription] = useState<boolean>(false)
+    const editor = useRef<HTMLFormElement | null>(null)
+    const [onEditDescription, setOnEditDescription] = useState<boolean>(false)
 
-//     const {
-//       register,
-//       formState: { errors },
-//       handleSubmit,
-//       setValue,
-//     } = useForm<z.infer<typeof CourseContentSchema>>({
-//       resolver: zodResolver(CourseContentSchema),
-//     })
+    const {
+      register,
+      formState: { errors },
+      handleSubmit,
+      setValue,
+    } = useForm<z.infer<typeof CourseContentSchema>>({
+      resolver: zodResolver(CourseContentSchema),
+    })
 
-//     const onSetDescriptions = () => {
-//       const JsonContent = JSON.stringify(onJsonDescription)
-//       setValue("jsoncontent", JsonContent)
-//       setValue("content", onDescription)
-//       setValue("htmlcontent", onHtmlDescription)
-//     }
+    const onSetDescriptions = () => {
+      const JsonContent = JSON.stringify(onJsonDescription)
+      setValue("jsoncontent", JsonContent)
+      setValue("content", onDescription)
+      setValue("htmlcontent", onHtmlDescription)
+    }
 
-//     useEffect(() => {
-//       onSetDescriptions()
-//       return () => {
-//         onSetDescriptions()
-//       }
-//     }, [onJsonDescription, onDescription])
+    useEffect(() => {
+      onSetDescriptions()
+      return () => {
+        onSetDescriptions()
+      }
+    }, [onJsonDescription, onDescription])
 
-//     const onEditTextEditor = (event: Event) => {
-//       if (editor.current) {
-//         !editor.current.contains(event.target as Node | null)
-//           ? setOnEditDescription(false)
-//           : setOnEditDescription(true)
-//       }
-//     }
+    const onEditTextEditor = (event: Event) => {
+      if (editor.current) {
+        !editor.current.contains(event.target as Node | null)
+          ? setOnEditDescription(false)
+          : setOnEditDescription(true)
+      }
+    }
 
-//     useEffect(() => {
-//       document.addEventListener("click", onEditTextEditor, false)
-//       return () => {
-//         document.removeEventListener("click", onEditTextEditor, false)
-//       }
-//     }, [])
+    useEffect(() => {
+      document.addEventListener("click", onEditTextEditor, false)
+      return () => {
+        document.removeEventListener("click", onEditTextEditor, false)
+      }
+    }, [])
 
-//     const client = useQueryClient()
+    const client = useQueryClient()
 
-//     const { mutate, isPending } = useMutation({
-//       mutationFn: (data: { values: z.infer<typeof CourseContentSchema> }) =>
-//         onUpdateCourseSectionContent(
-//           sectionId,
-//           data.values.htmlcontent!,
-//           data.values.jsoncontent!,
-//           data.values.content!,
-//         ),
-//       onSuccess: (data) => {
-//         toast(data.status === 200 ? "Success" : "Error", {
-//           description: data.message,
-//         })
-//       },
-//       onSettled: async () => {
-//         return await client.invalidateQueries({
-//           queryKey: ["section-info"],
-//         })
-//       },
-//     })
+    const { mutate, isPending } = useMutation({
+      mutationFn: (data: { values: z.infer<typeof CourseContentSchema> }) =>
+        onUpdateCourseSectionContent(
+          sectionId,
+          data.values.htmlcontent!,
+          data.values.jsoncontent!,
+          data.values.content!,
+        ),
+      onSuccess: (data) => {
+        toast(data.status === 200 ? "Success" : "Error", {
+          description: data.message,
+        })
+      },
+      onSettled: async () => {
+        return await client.invalidateQueries({
+          queryKey: ["section-info"],
+        })
+      },
+    })
 
-//     const onUpdateContent = handleSubmit(async (values) => {
-//       mutate({ values })
-//     })
+    const onUpdateContent = handleSubmit(async (values) => {
+      mutate({ values })
+    })
 
-//     return {
-//       register,
-//       errors,
-//       onUpdateContent,
-//       setJsonDescription,
-//       setOnDescription,
-//       onJsonDescription,
-//       onDescription,
-//       onEditDescription,
-//       setOnHtmlDescription,
-//       editor,
-//       isPending,
-//     }
-//   }
+    return {
+      register,
+      errors,
+      onUpdateContent,
+      setJsonDescription,
+      setOnDescription,
+      onJsonDescription,
+      onDescription,
+      onEditDescription,
+      setOnHtmlDescription,
+      editor,
+      isPending,
+    }
+  }

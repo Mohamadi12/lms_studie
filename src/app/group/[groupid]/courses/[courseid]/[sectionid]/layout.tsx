@@ -1,4 +1,4 @@
-import { onGetSectionInfo } from "@/actions/course"
+import { onGetSectionInfo } from "@/src/actions/course"
 import {
   dehydrate,
   HydrationBoundary,

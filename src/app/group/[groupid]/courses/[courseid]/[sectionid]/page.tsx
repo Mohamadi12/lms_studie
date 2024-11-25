@@ -1,5 +1,6 @@
 import { onAuthenticatedUser } from "@/src/actions/auth";
 import { onGetGroupInfo } from "@/src/actions/groups";
+import { CourseContentForm } from "@/src/components/forms/course-content";
 
 
 type Props = {
