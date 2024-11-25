@@ -1,11 +1,16 @@
-import { onAuthenticatedUser } from "@/src/actions/auth";
-import {  onGetAllGroupMembers, onGetGroupChannels, onGetGroupInfo, onGetGroupSubscriptions, onGetUserGroups } from "@/src/actions/groups";
-import SideBar from "@/src/components/global/sidebar";
-import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
-import { redirect } from "next/navigation";
-import React from "react";
-import { Navbar } from "../_components/navbar";
-import MobileNav from "../_components/mobile-nav";
+
+
+import {
+  HydrationBoundary,
+  QueryClient,
+  dehydrate,
+} from "@tanstack/react-query"
+import { redirect } from "next/navigation"
+import { Navbar } from "../_components/navbar"
+import MobileNav from "../_components/mobile-nav"
+import { onAuthenticatedUser } from "@/src/actions/auth"
+import { onGetAllGroupMembers, onGetGroupChannels, onGetGroupInfo, onGetGroupSubscriptions, onGetUserGroups } from "@/src/actions/groups"
+import SideBar from "@/src/components/global/sidebar"
 
 type Props = {
   children: React.ReactNode

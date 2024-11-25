@@ -1,37 +1,27 @@
-"use client";
+"use client"
 
-import {
-  onAddCustomDomain,
-  onGetAllGroupMembers,
-  onGetAllUserMessages,
-  onGetDomainConfig,
-  onGetExploreGroup,
-  onGetGroupInfo,
-  onSearchGroups,
-  onSendMessage,
-  onUpdateGroupGallery,
-  onUpDateGroupSettings,
-} from "@/src/actions/groups";
-import { superbaseClient, validateURLString } from "@/src/lib/utils";
-import { onOnline } from "@/src/redux/slices/online-member-slice";
-import { GroupStateProps, onClearSearch, onSearch } from "@/src/redux/slices/search-slice";
-import { AppDispatch } from "@/src/redux/store";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useDispatch } from "react-redux";
-import { JSONContent } from "novel";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { GroupSettingsSchema } from "@/src/components/forms/group-settings/schema";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { usePathname, useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { upload } from "@/src/lib/uploadcare";
-import { onClearList, onInfiniteScroll } from "@/src/redux/slices/infinite-scroll-slice";
-import { UpdateGallerySchema } from "@/src/components/forms/media-gallery/schema";
-import { onChat } from "@/src/redux/slices/chats-slices";
-import { SendNewMessageSchema } from "@/src/components/forms/huddles/schema";
-import { v4 } from "uuid";
+import { onAddCustomDomain, onGetAllGroupMembers, onGetAllUserMessages, onGetDomainConfig, onGetExploreGroup, onGetGroupInfo, onSearchGroups, onSendMessage, onUpdateGroupGallery, onUpDateGroupSettings } from "@/src/actions/groups"
+import { AddCustomDomainSchema } from "@/src/components/forms/domain/schema"
+import { GroupSettingsSchema } from "@/src/components/forms/group-settings/schema"
+import { SendNewMessageSchema } from "@/src/components/forms/huddles/schema"
+import { UpdateGallerySchema } from "@/src/components/forms/media-gallery/schema"
+import { upload } from "@/src/lib/uploadcare"
+import { superbaseClient, validateURLString } from "@/src/lib/utils"
+import { onChat } from "@/src/redux/slices/chats-slices"
+import { onClearList, onInfiniteScroll } from "@/src/redux/slices/infinite-scroll-slice"
+import { onOnline } from "@/src/redux/slices/online-member-slice"
+import { GroupStateProps, onClearSearch, onSearch } from "@/src/redux/slices/search-slice"
+import { AppDispatch } from "@/src/redux/store"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { usePathname, useRouter } from "next/navigation"
+import { JSONContent } from "novel"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useForm } from "react-hook-form"
+import { useDispatch } from "react-redux"
+import { toast } from "sonner"
+import { v4 } from "uuid"
+import { z } from "zod"
 
 export const useGroupChatOnline = (userid: string) => {
   const dispatch: AppDispatch = useDispatch()
@@ -358,7 +348,7 @@ export const useGroupAbout = (
   groupid: string,
 ) => {
   const editor = useRef<HTMLFormElement | null>(null)
-  const mediaType = validateURLString   (currentMedia)
+  const mediaType = validateURLString(currentMedia)
   const [activeMedia, setActiveMedia] = useState<
     | {
         url: string | undefined
@@ -657,46 +647,46 @@ export const useSendMessage = (recieverId: string) => {
   return { onSendNewMessage, register }
 }
 
-// export const useCustomDomain = (groupid: string) => {
-//   const {
-//     handleSubmit,
-//     register,
-//     formState: { errors },
-//     reset,
-//   } = useForm<z.infer<typeof AddCustomDomainSchema>>({
-//     resolver: zodResolver(AddCustomDomainSchema),
-//   })
+export const useCustomDomain = (groupid: string) => {
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+    reset,
+  } = useForm<z.infer<typeof AddCustomDomainSchema>>({
+    resolver: zodResolver(AddCustomDomainSchema),
+  })
 
-//   const client = useQueryClient()
+  const client = useQueryClient()
 
-//   const { data } = useQuery({
-//     queryKey: ["domain-config"],
-//     queryFn: () => onGetDomainConfig(groupid),
-//   })
+  const { data } = useQuery({
+    queryKey: ["domain-config"],
+    queryFn: () => onGetDomainConfig(groupid),
+  })
 
-//   const { mutate, isPending } = useMutation({
-//     mutationFn: (data: { domain: string }) =>
-//       onAddCustomDomain(groupid, data.domain),
-//     onMutate: reset,
-//     onSuccess: (data) => {
-//       return toast(data.status === 200 ? "Success" : "Error", {
-//         description: data.message,
-//       })
-//     },
-//     onSettled: async () => {
-//       return await client.invalidateQueries({
-//         queryKey: ["domain-config"],
-//       })
-//     },
-//   })
+  const { mutate, isPending } = useMutation({
+    mutationFn: (data: { domain: string }) =>
+      onAddCustomDomain(groupid, data.domain),
+    onMutate: reset,
+    onSuccess: (data) => {
+      return toast(data.status === 200 ? "Success" : "Error", {
+        description: data.message,
+      })
+    },
+    onSettled: async () => {
+      return await client.invalidateQueries({
+        queryKey: ["domain-config"],
+      })
+    },
+  })
 
-//   const onAddDomain = handleSubmit(async (values) => mutate(values))
+  const onAddDomain = handleSubmit(async (values) => mutate(values))
 
-//   return {
-//     onAddDomain,
-//     isPending,
-//     register,
-//     errors,
-//     data,
-//   }
-// }
+  return {
+    onAddDomain,
+    isPending,
+    register,
+    errors,
+    data,
+  }
+}
